@@ -1,30 +1,45 @@
 var express = require('express');
 var path = require('path');
+var config = require('./config/config');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var db = require('./helpers/db');
 
+// Session storage
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
+
+// Routes
 var routes = require('./routes/index');
 var users = require('./routes/users');
+
+// Auth manager
 var authManager = require('./helpers/authenticationManager');
 
 var app = express();
 
+// Connect to MongoDB
+db.configureConnection();
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-//app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser(config.secret));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Activacion del uso de sesiones
-app.use(express.session({secret : 'keyboard cat'});
+// MongoDB session storage enabled
+app.use(session({
+    secret: config.secret,
+    store: new MongoStore({mongooseConnection: db.getConnection()})
+}));
 app.use(authManager.initialize());
 app.use(authManager.session());
 
