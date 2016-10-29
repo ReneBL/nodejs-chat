@@ -6,6 +6,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var db = require('./helpers/db');
+var flash = require('connect-flash');
 
 // Session storage
 var session = require('express-session');
@@ -34,6 +35,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser(config.secret));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(flash());
 
 // MongoDB session storage enabled
 app.use(session({

@@ -17,7 +17,7 @@ router.post('/login', authManager.authenticate(), function(req, res) {
 });
 
 // Do logout
-router.get('/logout', authManager.isLoggedIn, function(req, res, next) {
+router.get('/logout', authManager.isLoggedIn('/users/login'), function(req, res, next) {
     req.logout();
     res.redirect('/');
 });
@@ -30,12 +30,17 @@ router.post('/register', function(req, res, next) {
 
     var user = new User({name: name, surname: surname, nickname: nickname, pass: pass});
     user.save(function(err, result) {
-        if (err) next(err);
+        if (err) {
+            if (err.code == 11000) {
+                return res.json({"message": "User already exists"});
+            }
+            next(err);
+        }
         next();
     });
 });
 
-router.get('/find', authManager.isLoggedIn, function(req, res, next) {
+router.get('/find', authManager.isLoggedIn('/users/login'), function(req, res, next) {
     // Obtener de la request el parametro 'name'
     var name = req.query.name;
     if (!name) next();
@@ -45,7 +50,6 @@ router.get('/find', authManager.isLoggedIn, function(req, res, next) {
     User.find({$or: [{name: {$regex: regExp}}, {surname: {$regex: regExp}}]},
         {"_id": 0, "name":1, "surname":1, "nickname":1},
         function(err, result) {
-            console.log('Found result: ', result);
             if (err) next(err);
             res.json(result);
         }

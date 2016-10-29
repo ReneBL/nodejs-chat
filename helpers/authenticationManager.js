@@ -16,13 +16,10 @@ var setup = function() {
             passwordField: 'pass'
         },
         function(username, password, done) {
-            console.log('Authenticating user: ' + username);
             Users.findOne({ nickname: username }, function (err, user) {
-                console.log(user);
-                console.log('Correct password: ' + (password == user.pass));
                 if (err) { return done(err); }
-                if (!user) { return done(null, false); }
-                if (!user.pass === password) { return done(null, false); }
+                if (!user) { return done(null, false, { message: 'Incorrect username.' }); }
+                if (user.pass != password) { return done(null, false, { message: 'Incorrect password.' }); }
                 return done(null, user);
             });
         }
@@ -45,18 +42,18 @@ var setup = function() {
 };
 
 var authenticate = function() {
-    return passport.authenticate('local', {failureRedirect: '/login'});
+    return passport.authenticate('local', {failureRedirect: '/users/login', failureFlash: true});
 };
 
-var isLoggedIn = function(req, res, next) {
-    if (req.user) {
-        // Usuario autenticado
-        console.log('User %s was logged in', req.user);
-        next();
-    } else {
-        console.log('User is not logged in, redirecting...');
-        res.redirect('/login');
-    }
+var isLoggedIn = function(redirection) {
+    return function(req, res, next) {
+        if (req.user) {
+            // Usuario autenticado
+            next();
+        } else {
+            res.redirect(redirection);
+        }
+    };
 };
 
 module.exports = {
