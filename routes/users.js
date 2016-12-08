@@ -9,11 +9,8 @@ router.get('/login', function(req, res) {
 });
 
 // Do login
-router.post('/login', authManager.authenticate(), function(req, res) {
-    // Successful login, redirecting...
-    var previous = req.session.previousPage ? req.session.previousPage : '/';
-    delete req.session.previousPage;
-    res.redirect(previous);
+router.post('/login', function(req, res, next) {
+    authManager.authenticate(req, res, next);
 });
 
 // Do logout
@@ -32,11 +29,12 @@ router.post('/register', function(req, res, next) {
     user.save(function(err, result) {
         if (err) {
             if (err.code == 11000) {
-                return res.json({"message": "User already exists"});
+                return res.status(400).json({"error": "REGISTRATION_FAIL", 
+                    "message": "User already exists"});
             }
             next(err);
         }
-        next();
+        authManager.authenticate(req, res, next);
     });
 });
 

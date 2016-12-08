@@ -18,7 +18,7 @@ var setup = function() {
         function(username, password, done) {
             Users.findOne({ nickname: username }, function (err, user) {
                 if (err) { return done(err); }
-                if (!user) { return done(null, false, { message: 'Incorrect username.' }); }
+                if (!user) { return done(null, false, { message: 'Username does not exists.' }); }
                 if (user.pass != password) { return done(null, false, { message: 'Incorrect password.' }); }
                 return done(null, user);
             });
@@ -41,8 +41,15 @@ var setup = function() {
     });
 };
 
-var authenticate = function() {
-    return passport.authenticate('local', {failureRedirect: '/users/login', failureFlash: true});
+var authenticate = function(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (!user) { return res.status(401).send({error : "AUTH_FAIL", message : info.message}); }
+        req.logIn(user, function(err) {
+            if (err) { return next(err); }
+            return res.redirect('/');
+        });
+    })(req, res, next);
 };
 
 var isLoggedIn = function(redirection) {
