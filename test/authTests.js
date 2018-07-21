@@ -2,14 +2,14 @@ process.env.NODE_ENV = 'test';
 
 var app = require('../app');
 var db = require('../helpers/db');
-var c = require('chai');
+var chai = require('chai');
 var chaiHttp = require('chai-http');
 var User = require('../models/user');
-var should = c.should();
+var should = chai.should();
 
-c.use(chaiHttp);
+chai.use(chaiHttp);
 
-var chai = c.request.agent(app);
+//var chai = c.request(app);
 
 describe("Authentication", function () {
 
@@ -28,58 +28,23 @@ describe("Authentication", function () {
         done();
     });
 
-    describe("Login", function () {
-        it("should log in a registered user", function (done) {
-            chai.post('/users/login')
-                .send({ 'nickname': 'PericoP', 'pass': '1234' })
-                .end(function (err, res) {
-                    res.should.to.redirect;
-                    res.should.have.status(200);
-                    done();
-                });
-        });
-        it("should abort log in on incorrect pass", function (done) {
-            chai.post('/users/login')
-                .send({ 'nickname': 'PericoP', 'pass': '4567' })
-                .end(function (err, res) {
-                    res.should.have.status(401);
-                    res.should.have.json;
-                    res.body.should.have.property('error');
-                    res.body.should.have.property('message');
-                    res.body.error.should.equal('AUTH_FAIL');
-                    res.body.message.should.equal('Incorrect password.');
-                    done();
-                });
-        });
-        it("should abort log in on user not found", function (done) {
-            chai.post('/users/login')
-                .send({ 'nickname': 'user', 'pass': '4567' })
-                .end(function (err, res) {
-                    res.should.have.status(401);
-                    res.should.have.json;
-                    res.body.should.have.property('error');
-                    res.body.should.have.property('message');
-                    res.body.error.should.equal('AUTH_FAIL');
-                    res.body.message.should.equal('Username does not exists.');
-                    done();
-                });
-        });
-    });
     describe("Register", function () {
         it("should register a new user", function (done) {
-            chai.post('/users/register')
+            chai.request(app)
+                .post('/api/users/register')
                 .send({
                     name: 'Usuario', surname: 'Prueba',
                     nickname: 'userP', pass: 'password'
                 })
                 .end(function (err, res) {
+                    res.should.have.cookie("connect.sid");
                     res.should.have.status(200);
-                    res.should.to.redirect;
                     done();
                 });
         });
         it("should abort registration if user exists", function (done) {
-            chai.post('/users/register')
+            chai.request(app)
+                .post('/api/users/register')
                 .send({
                     name: 'Perico', surname: 'Palotes',
                     nickname: 'PericoP', pass: '1234'
@@ -96,35 +61,90 @@ describe("Authentication", function () {
         });
 
     });
+
+    describe("Login", function () {
+
+        var r = chai.request.agent(app);
+
+        it("should log in a registered user", function (done) {
+            r.post('/api/users/login')
+                .send({ 'nickname': 'PericoP', 'pass': '1234' })
+                .end(function (err, res) {
+                    res.should.have.cookie("connect.sid");
+                    res.should.have.status(200);
+                    done();
+                });
+        });
+
+        it("should return logged user info", function (done) {
+            r.get('/api/users/login')
+                .end(function (err, res) {
+                    res.should.have.status(200);
+                    res.should.have.json;
+                    res.body.should.have.property('name');
+                    res.body.should.have.property('surname');
+                    res.body.should.have.property('nickname');
+                    res.body.name.should.equal('Perico');
+                    res.body.surname.should.equal('Palotes');
+                    res.body.nickname.should.equal('PericoP');
+                    done();
+                });
+        });
+
+        it("should abort log in on incorrect pass", function (done) {
+            chai.request(app)
+                .post('/api/users/login')
+                .send({ 'nickname': 'PericoP', 'pass': '4567' })
+                .end(function (err, res) {
+                    res.should.have.status(401);
+                    res.should.have.json;
+                    res.body.should.have.property('error');
+                    res.body.should.have.property('message');
+                    res.body.error.should.equal('AUTH_FAIL');
+                    res.body.message.should.equal('Incorrect password.');
+                    done();
+                });
+        });
+        it("should abort log in on user not found", function (done) {
+            chai.request(app)
+                .post('/api/users/login')
+                .send({ 'nickname': 'user', 'pass': '4567' })
+                .end(function (err, res) {
+                    res.should.have.status(401);
+                    res.should.have.json;
+                    res.body.should.have.property('error');
+                    res.body.should.have.property('message');
+                    res.body.error.should.equal('AUTH_FAIL');
+                    res.body.message.should.equal('Username does not exists.');
+                    done();
+                });
+        });
+    });
     describe("Logout", function () {
 
+        var r = chai.request.agent(app);
+
         before("Login registered user", function (done) {
-            chai.post('/users/login')
+            r.post('/api/users/login')
                 .send({ 'nickname': 'PericoP', 'pass': '1234' })
-                .redirects(0)
                 .end(function (err, res) {
                     done();
                 });
         });
 
         it("should logout successfully if user is already logged in", function (done) {
-            chai.get("/users/logout")
-                .redirects(0)
+            r.get("/api/users/logout")
                 .end(function (err, res) {
-                    res.should.to.redirectTo("/");
+                    res.should.have.status(200);
                     res.should.not.have.cookie("connect.sid");
-                    res.should.have.status(302);
                     done();
                 });
         });
 
         it("should try to logout but get a redirection to login instead", function (done) {
-            chai.get("/users/logout")
-                .redirects(0)
+            chai.request(app).get("/api/users/logout")
                 .end(function (err, res) {
-                    res.should.to.redirectTo("/users/login");
-                    res.should.not.have.cookie("connect.sid");
-                    res.should.have.status(302);
+                    res.should.have.status(401);
                     done();
                 });
         });
