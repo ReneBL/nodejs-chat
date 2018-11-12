@@ -10,13 +10,18 @@ var should = chai.should();
 chai.use(chaiHttp);
 
 //var chai = c.request(app);
+const USER_NAME = "John";
+const USER_SURNAME = "Doe";
+const USER_NICKNAME = "JDoe";
+const USER_PASSWORD = "1234";
 
 describe("Authentication", function () {
+    var r = chai.request.agent(app);
 
     before(function (done) {
         var user = new User({
-            name: 'Perico', surname: 'Palotes',
-            nickname: 'PericoP', pass: '1234'
+            name: USER_NAME, surname: USER_SURNAME,
+            nickname: USER_NICKNAME, pass: USER_PASSWORD
         });
         user.save(function (err) {
             done();
@@ -24,8 +29,12 @@ describe("Authentication", function () {
     });
 
     after(function (done) {
-        db.dropDatabase();
-        done();
+        db.dropDatabase().then(() => {
+            db.closeConnection().then(() => {
+                r.close();
+                done();
+            });
+        });
     });
 
     describe("Register", function () {
@@ -38,6 +47,7 @@ describe("Authentication", function () {
                 })
                 .end(function (err, res) {
                     res.should.have.cookie("connect.sid");
+                    res.should.have.header("Access-Token");
                     res.should.have.status(200);
                     done();
                 });
@@ -46,8 +56,8 @@ describe("Authentication", function () {
             chai.request(app)
                 .post('/api/users/register')
                 .send({
-                    name: 'Perico', surname: 'Palotes',
-                    nickname: 'PericoP', pass: '1234'
+                    name: USER_NAME, surname: USER_SURNAME,
+                    nickname: USER_NICKNAME, pass: USER_PASSWORD
                 })
                 .end(function (err, res) {
                     res.should.have.status(400);
@@ -64,13 +74,12 @@ describe("Authentication", function () {
 
     describe("Login", function () {
 
-        var r = chai.request.agent(app);
-
         it("should log in a registered user", function (done) {
             r.post('/api/users/login')
-                .send({ 'nickname': 'PericoP', 'pass': '1234' })
+                .send({ 'nickname': USER_NICKNAME, 'pass': USER_PASSWORD })
                 .end(function (err, res) {
                     res.should.have.cookie("connect.sid");
+                    res.should.have.header("Access-Token");
                     res.should.have.status(200);
                     done();
                 });
@@ -84,9 +93,9 @@ describe("Authentication", function () {
                     res.body.should.have.property('name');
                     res.body.should.have.property('surname');
                     res.body.should.have.property('nickname');
-                    res.body.name.should.equal('Perico');
-                    res.body.surname.should.equal('Palotes');
-                    res.body.nickname.should.equal('PericoP');
+                    res.body.name.should.equal(USER_NAME);
+                    res.body.surname.should.equal(USER_SURNAME);
+                    res.body.nickname.should.equal(USER_NICKNAME);
                     done();
                 });
         });
@@ -94,14 +103,14 @@ describe("Authentication", function () {
         it("should abort log in on incorrect pass", function (done) {
             chai.request(app)
                 .post('/api/users/login')
-                .send({ 'nickname': 'PericoP', 'pass': '4567' })
+                .send({ 'nickname': USER_NICKNAME, 'pass': '4567' })
                 .end(function (err, res) {
                     res.should.have.status(401);
                     res.should.have.json;
                     res.body.should.have.property('error');
                     res.body.should.have.property('message');
                     res.body.error.should.equal('AUTH_FAIL');
-                    res.body.message.should.equal('Incorrect password.');
+                    res.body.message.should.equal('Incorrect user/password.');
                     done();
                 });
         });
@@ -115,18 +124,16 @@ describe("Authentication", function () {
                     res.body.should.have.property('error');
                     res.body.should.have.property('message');
                     res.body.error.should.equal('AUTH_FAIL');
-                    res.body.message.should.equal('Username does not exists.');
+                    res.body.message.should.equal('Incorrect user/password.');
                     done();
                 });
         });
     });
     describe("Logout", function () {
 
-        var r = chai.request.agent(app);
-
         before("Login registered user", function (done) {
             r.post('/api/users/login')
-                .send({ 'nickname': 'PericoP', 'pass': '1234' })
+                .send({ 'nickname': USER_NICKNAME, 'pass': USER_PASSWORD })
                 .end(function (err, res) {
                     done();
                 });
@@ -137,6 +144,7 @@ describe("Authentication", function () {
                 .end(function (err, res) {
                     res.should.have.status(200);
                     res.should.not.have.cookie("connect.sid");
+                    res.should.not.have.header("Access-Token");
                     done();
                 });
         });

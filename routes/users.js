@@ -20,7 +20,6 @@ router.post('/login', function (req, res, next) {
 
 // Do logout
 router.get('/logout', authManager.isLoggedIn(), function (req, res, next) {
-    console.log("logout");
     req.logout();
     res.end();
 });

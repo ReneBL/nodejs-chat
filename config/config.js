@@ -1,21 +1,21 @@
 var config = {
     development: {
-        secret: "keyboard cat",
+        secret: "applicationsecret",
         dbUrl: "mongodb://localhost/nodejs-chat-dev"
     },
     production: {
-        secret: "keyboard cat production",
+        secret: "applicationsecret production",
         dbUrl: "mongodb://localhost/nodejs-chat"
     },
     test: {
-        secret: "keyboard cat test",
+        secret: "applicationsecret test",
         dbUrl: "mongodb://localhost/nodejs-chat-test"
     }
 };
 
 // This function must be called once in the application, since it access
 // process.env (better performance)
-var init = function() {
+var init = function () {
     var env = process.env.NODE_ENV || 'development';
     return config[env];
 }

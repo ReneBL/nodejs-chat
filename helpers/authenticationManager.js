@@ -1,6 +1,8 @@
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var Users = require('../models/user');
+var jwt = require('jsonwebtoken');
+var config = require('../config/config');
 
 var initialize = function () {
     return passport.initialize();
@@ -18,8 +20,7 @@ var setup = function () {
         function (username, password, done) {
             Users.findOne({ nickname: username }, function (err, user) {
                 if (err) { return done(err); }
-                if (!user) { return done(null, false, { message: 'Username does not exists.' }); }
-                if (user.pass != password) { return done(null, false, { message: 'Incorrect password.' }); }
+                if (!user || (user.pass != password)) { return done(null, false, { message: 'Incorrect user/password.' }); }
                 return done(null, user);
             });
         }
@@ -47,7 +48,10 @@ var authenticate = function (req, res, next) {
         if (!user) { return res.status(401).send({ error: "AUTH_FAIL", message: info.message }); }
         req.logIn(user, function (err) {
             if (err) { return next(err); }
-            return res.status(200).end();
+            const token = jwt.sign({
+                exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour
+            }, config.secret);
+            return res.append('Access-Token', token).status(200).end();
         });
     })(req, res, next);
 };
