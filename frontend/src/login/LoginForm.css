@@ -1,0 +1,21 @@
+.Loginform {
+    text-align: right;
+    margin: 40px 0 40px 0;
+}
+
+.Loginform-button {
+    align-self: flex-end;
+    background-color: transparent;
+    border: 1px solid black;
+}
+
+.Loginform-button:active {
+    outline-width: 0;
+    outline-color: transparent;
+    background-color: gray;
+}
+
+.Loginform-button:focus {
+    outline-width: 0;
+    outline-color: transparent;
+}

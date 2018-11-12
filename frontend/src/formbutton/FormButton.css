@@ -1,0 +1,21 @@
+.FormButton {
+    font-size: 14px;
+    background-color: black;
+    font-weight: bold;
+    color: white;
+    border-width: 0px;
+    border-radius: 4px;
+    width: 100%;
+    height: 40px;
+}
+
+.FormButton:active {
+    outline-width: 0;
+    outline-color: transparent;
+    background-color: gray;
+}
+
+.FormButton:focus {
+    outline-width: 0;
+    outline-color: transparent;
+}

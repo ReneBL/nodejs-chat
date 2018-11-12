@@ -1,0 +1,27 @@
+.Authentication {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    align-self: center;
+    margin: auto;
+    width: 35%;
+    height: 100%;
+    flex-wrap: wrap;
+}
+
+.Authentication-header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.Authentication-registrationtext {
+    margin-top: 10px;
+}
+
+.Authentication-fail-banner {
+    width: 100%;
+    background-color: red;
+    color: white;
+    height: auto;
+}
