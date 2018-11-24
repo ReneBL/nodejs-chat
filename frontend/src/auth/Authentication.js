@@ -17,7 +17,7 @@ class Authentication extends React.Component {
             pass: '',
             authState: {
                 failed: false,
-                message: ''
+                message: 'An error has ocurred.'
             }
         }
         this.handleNameChange = this.handleNameChange.bind(this);
@@ -95,6 +95,7 @@ class Authentication extends React.Component {
                     message: "An error has ocurred. Please try again later."
                 }
             });
+            console.log(err);
         });
     }
 
@@ -102,24 +103,24 @@ class Authentication extends React.Component {
         const loc = this.props.location.pathname;
         return (
             <div className="Authentication">
-                {this.state.authState.failed &&
-                    <div className="Authentication-fail-banner">
-                        <span>{this.state.authState.message}</span>
-                    </div>
-                }
-                <h2 className="Authentication-header">NodeChat</h2>
-                {loc === "/login" ? (
-                    <div>
-                        <LoginForm handleNicknameChange={this.handleNicknameChange}
-                            handlePassChange={this.handlePassChange} onSubmitClicked={this.onSubmitClicked} />
-                        <span className="Authentication-registrationtext">No tienes cuenta? <Link to={"/register"}>Registrate</Link></span>
-                    </div>
-                ) : (
-                        <RegisterForm handleNicknameChange={this.handleNicknameChange}
-                            handlePassChange={this.handlePassChange} handleNameChange={this.handleNameChange}
-                            handleSurnameChange={this.handleSurnameChange} onSubmitClicked={this.onSubmitClicked} />
-                    )
-                }
+                <div className={this.state.authState.failed ? "Authentication-fail-banner" : "Authentication-fail-banner-hidden"}>
+                    <span>{this.state.authState.message}</span>
+                </div>
+                <div className="Authentication-content">
+                    <h2 className="Authentication-header">NodeChat</h2>
+                    {loc === "/login" ? (
+                        <div>
+                            <LoginForm handleNicknameChange={this.handleNicknameChange}
+                                handlePassChange={this.handlePassChange} onSubmitClicked={this.onSubmitClicked} />
+                            <span className="Authentication-registrationtext">No tienes cuenta? <Link to={"/register"}>Registrate</Link></span>
+                        </div>
+                    ) : (
+                            <RegisterForm handleNicknameChange={this.handleNicknameChange}
+                                handlePassChange={this.handlePassChange} handleNameChange={this.handleNameChange}
+                                handleSurnameChange={this.handleSurnameChange} onSubmitClicked={this.onSubmitClicked} />
+                        )
+                    }
+                </div>
             </div>
         );
     }

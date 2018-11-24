@@ -1,13 +1,18 @@
 .Authentication {
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
-    justify-content: center;
     text-align: center;
-    align-self: center;
     margin: auto;
     width: 35%;
     height: 100%;
     flex-wrap: wrap;
+}
+
+.Authentication-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
 }
 
 .Authentication-header {
@@ -24,4 +29,8 @@
     background-color: red;
     color: white;
     height: auto;
+}
+
+.Authentication-fail-banner-hidden {
+    visibility: hidden;
 }
