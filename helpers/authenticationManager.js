@@ -3,6 +3,7 @@ var LocalStrategy = require('passport-local').Strategy;
 var Users = require('../models/user');
 var jwt = require('jsonwebtoken');
 var config = require('../config/config');
+const Constants = require('../helpers/constants.js');
 
 var initialize = function () {
     return passport.initialize();
@@ -45,7 +46,7 @@ var setup = function () {
 var authenticate = function (req, res, next) {
     passport.authenticate('local', function (err, user, info) {
         if (err) { return next(err); }
-        if (!user) { return res.status(401).send({ error: "AUTH_FAIL", message: info.message }); }
+        if (!user) { return res.status(401).send({ error: Constants.AUTH_FAIL, message: info.message }); }
         req.logIn(user, function (err) {
             if (err) { return next(err); }
             const token = jwt.sign({

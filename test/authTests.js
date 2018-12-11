@@ -38,7 +38,7 @@ describe("Authentication", function () {
     });
 
     describe("Register", function () {
-        it("should register a new user", function (done) {
+        it("should register expected new user when correct data is passed", function (done) {
             chai.request(app)
                 .post('/api/users/register')
                 .send({
@@ -69,12 +69,35 @@ describe("Authentication", function () {
                     done();
                 });
         });
+        it("should abort registration if invalid data is passed", function (done) {
+            chai.request(app)
+                .post('/api/users/register')
+                .send({
+                    name: '', surname: USER_SURNAME, nickname: USER_NICKNAME, pass: USER_PASSWORD
+                })
+                .end(function (err, res) {
+                    res.should.have.status(400);
+                    res.should.have.json;
+                    res.body.should.have.property('error');
+                    res.body.should.have.property('message');
+                    res.body.error.should.equal('REGISTRATION_FAIL');
+
+                    var expected = [{
+                        "location": "body",
+                        "msg": "Name cannot be blank or empty",
+                        "param": "name",
+                        "value": ""
+                    }];
+                    chai.expect(res.body.message).to.eql(expected);
+                    done();
+                });
+        });
 
     });
 
     describe("Login", function () {
 
-        it("should log in a registered user", function (done) {
+        it("should log in expected registered user", function (done) {
             r.post('/api/users/login')
                 .send({ 'nickname': USER_NICKNAME, 'pass': USER_PASSWORD })
                 .end(function (err, res) {
@@ -128,6 +151,28 @@ describe("Authentication", function () {
                     done();
                 });
         });
+        it("should abort log in on invalid data", function (done) {
+            chai.request(app)
+                .post('/api/users/login')
+                .send({ 'nickname': 'user', 'pass': '' })
+                .end(function (err, res) {
+                    res.should.have.status(400);
+                    res.should.have.json;
+                    res.body.should.have.property('error');
+                    res.body.should.have.property('message');
+                    res.body.error.should.equal('AUTH_FAIL');
+
+                    var expected = [{
+                        "location": "body",
+                        "msg": "Password cannot be blank or empty",
+                        "param": "pass",
+                        "value": ""
+                    }];
+                    chai.expect(res.body.message).to.eql(expected);
+
+                    done();
+                });
+        });
     });
     describe("Logout", function () {
 
@@ -149,7 +194,7 @@ describe("Authentication", function () {
                 });
         });
 
-        it("should try to logout but get a redirection to login instead", function (done) {
+        it("should try to logout but get expected redirection to login instead", function (done) {
             chai.request(app).get("/api/users/logout")
                 .end(function (err, res) {
                     res.should.have.status(401);

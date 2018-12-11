@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var User = require('../models/user.js');
 var authManager = require('../helpers/authenticationManager');
+const { check, validationResult } = require('express-validator/check');
+const Constants = require('../helpers/constants.js');
 
 // Check if user is authenticated
 router.get('/login', authManager.isLoggedIn(), function (req, res, next) {
@@ -14,7 +16,14 @@ router.get('/login', authManager.isLoggedIn(), function (req, res, next) {
 });
 
 // Do login
-router.post('/login', function (req, res, next) {
+router.post('/login', [check('nickname', 'Nickname cannot be blank or empty').not().isEmpty(),
+check('pass', 'Password cannot be blank or empty').not().isEmpty()], function (req, res, next) {
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: Constants.AUTH_FAIL, message: errors.array() });
+    }
+
     authManager.authenticate(req, res, next);
 });
 
@@ -24,7 +33,16 @@ router.get('/logout', authManager.isLoggedIn(), function (req, res, next) {
     res.end();
 });
 
-router.post('/register', function (req, res, next) {
+router.post('/register', [check('name', 'Name cannot be blank or empty').not().isEmpty(),
+check('surname', 'Surname cannot be blank or empty').not().isEmpty(),
+check('nickname', 'Nickname cannot be blank or empty').not().isEmpty(),
+check('pass', 'Password cannot be blank or empty').not().isEmpty()], function (req, res, next) {
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: Constants.REGISTRATION_FAIL, message: errors.array() });
+    }
+
     var name = req.body.name;
     var surname = req.body.surname;
     var nickname = req.body.nickname;
@@ -35,7 +53,7 @@ router.post('/register', function (req, res, next) {
         if (err) {
             if (err.code == 11000) {
                 return res.status(400).json({
-                    "error": "REGISTRATION_FAIL",
+                    "error": Constants.REGISTRATION_FAIL,
                     "message": "User already exists"
                 });
             }

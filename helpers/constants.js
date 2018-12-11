@@ -1,0 +1,4 @@
+module.exports = {
+    REGISTRATION_FAIL: 'REGISTRATION_FAIL',
+    AUTH_FAIL: 'AUTH_FAIL'
+}
