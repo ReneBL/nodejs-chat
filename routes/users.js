@@ -1,13 +1,13 @@
-var express = require('express');
-var router = express.Router();
-var User = require('../models/user.js');
-var authManager = require('../helpers/authenticationManager');
+const express = require('express');
+const router = express.Router();
+const User = require('../models/user.js');
+const authManager = require('../helpers/authenticationManager');
 const { check, validationResult } = require('express-validator/check');
 const Constants = require('../helpers/constants.js');
 
 // Check if user is authenticated
 router.get('/login', authManager.isLoggedIn(), function (req, res, next) {
-    var userinfo = {
+    const userinfo = {
         name: req.user.name,
         surname: req.user.surname,
         nickname: req.user.nickname

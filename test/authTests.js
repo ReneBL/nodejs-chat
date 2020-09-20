@@ -5,7 +5,6 @@ var db = require('../helpers/db');
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var User = require('../models/user');
-var should = chai.should();
 
 chai.use(chaiHttp);
 
@@ -30,10 +29,8 @@ describe("Authentication", function () {
 
     after(function (done) {
         db.dropDatabase().then(() => {
-            db.closeConnection().then(() => {
-                r.close();
-                done();
-            });
+            r.close();
+            done();
         });
     });
 

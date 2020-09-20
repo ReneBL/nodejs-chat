@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var config = require('../config/config');
 
 var configureConnection = function () {
-    mongoose.connect(config.dbUrl, { useMongoClient: true });
+    mongoose.connect(config.dbUrl, { useNewUrlParser: true });
 }
 
 var getConnection = function () {

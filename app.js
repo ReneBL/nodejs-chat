@@ -1,7 +1,5 @@
 var express = require('express');
-var path = require('path');
 var config = require('./config/config');
-var favicon = require('serve-favicon');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var db = require('./helpers/db');
@@ -13,9 +11,11 @@ var MongoStore = require('connect-mongo')(session);
 
 // Routes
 var users = require('./routes/users');
+var messages = require('./routes/messages');
 
 // Auth manager
 var authManager = require('./helpers/authenticationManager');
+const message = require('./models/message');
 
 var app = express();
 
@@ -38,6 +38,7 @@ app.use(authManager.session());
 authManager.setup();
 
 app.use('/api/users', users);
+app.use('/api/messages', messages);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
